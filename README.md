@@ -50,3 +50,8 @@ Do not use this application with real customer data until authentication, server
 3. Members, plans, memberships, renewals and payment records.
 4. Attendance, receipts, staff permissions and audit logging.
 5. GymOS subscription tracking, manual payment verification, tests and deployment hardening.
+
+
+## Supabase database setup
+
+See [docs/supabase-setup.md](docs/supabase-setup.md) for project configuration, environment variables, migration instructions and security notes. The initial schema is in `supabase/migrations/0001_initial_schema.sql`.
