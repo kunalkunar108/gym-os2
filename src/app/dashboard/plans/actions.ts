@@ -46,7 +46,6 @@ export async function createMembershipPlan(formData: FormData) {
     gym_id: gymId,
     ...plan,
     is_active: true,
-    created_by: user.id,
   });
 
   if (error) redirect(`/dashboard/plans?error=${encodeURIComponent(error.message)}`);
