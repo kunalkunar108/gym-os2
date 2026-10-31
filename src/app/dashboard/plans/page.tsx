@@ -6,13 +6,6 @@ import { createMembershipPlan, updateMembershipPlan } from "./actions";
 
 type SearchParams = Promise<{ error?: string; success?: string }>;
 
-const durationPresets = [
-  { label: "1 month", days: 30 },
-  { label: "3 months", days: 90 },
-  { label: "6 months", days: 180 },
-  { label: "1 year", days: 365 },
-];
-
 export default async function PlansPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -62,8 +55,7 @@ export default async function PlansPage({ searchParams }: { searchParams: Search
             <div className="mb-5 flex items-center gap-2"><Layers3 size={18} className="text-[var(--accent)]"/><h2 className="font-semibold">Create a plan</h2></div>
             <form action={createMembershipPlan} className="space-y-4">
               <label className="block text-sm">Plan name<input name="name" required minLength={2} maxLength={80} placeholder="e.g. Gold Membership" className="mt-2 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-sm outline-none focus:border-[var(--accent)]"/></label>
-              <label className="block text-sm">Duration<select name="duration_days" defaultValue="30" className="mt-2 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-sm outline-none focus:border-[var(--accent)]">{durationPresets.map((preset) => <option key={preset.days} value={preset.days}>{preset.label} ({preset.days} days)</option>)}<option value="custom" disabled>Custom duration — enter below</option></select></label>
-              <label className="block text-sm">Custom duration in days<input name="duration_days_custom" type="number" min="1" max="3650" placeholder="Optional — use preset above" disabled className="mt-2 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-sm opacity-50"/></label>
+              <label className="block text-sm">Duration (days)<input name="duration_days" type="number" required min="1" max="3650" defaultValue="30" placeholder="e.g. 30, 90, 180, 365" className="mt-2 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-sm outline-none focus:border-[var(--accent)]"/><span className="mt-1 block text-xs text-[var(--muted)]">Examples: 30 days (1 month), 90 days (3 months), 180 days (6 months), 365 days (1 year).</span></label>
               <label className="block text-sm">Price (₹)<input name="price" type="number" required min="0" max="9999999999" step="0.01" placeholder="e.g. 1500" className="mt-2 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 py-3 text-sm outline-none focus:border-[var(--accent)]"/></label>
               <p className="text-xs text-[var(--muted)]">Plans are gym-specific. You can deactivate a plan instead of deleting it, preserving membership history.</p>
               <button className="w-full rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-black hover:opacity-90">Create plan</button>
