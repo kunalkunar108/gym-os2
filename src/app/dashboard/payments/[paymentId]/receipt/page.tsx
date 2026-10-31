@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import PrintReceiptButton from "./print-button";
 
 export default async function PaymentReceiptPage({ params }: { params: Promise<{ paymentId: string }> }) {
   const { paymentId } = await params;
@@ -27,7 +28,7 @@ export default async function PaymentReceiptPage({ params }: { params: Promise<{
   const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 });
   return (
     <main className="mx-auto max-w-xl p-6 md:p-10">
-      <div className="print:hidden mb-6 flex items-center justify-between"><Link href="/dashboard/payments" className="text-sm underline">Back to payments</Link><button onClick={() => window.print()} className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black">Print receipt</button></div>
+      <div className="print:hidden mb-6 flex items-center justify-between"><Link href="/dashboard/payments" className="text-sm underline">Back to payments</Link><PrintReceiptButton /></div>
       <article className="rounded-2xl border border-[var(--border)] bg-white p-8 text-slate-900 print:border-0 print:p-0">
         <div className="border-b border-dashed border-slate-300 pb-5 text-center"><p className="text-sm font-semibold tracking-wide">PAYMENT RECEIPT</p><h1 className="mt-2 text-2xl font-bold">{gym.name}</h1><p className="mt-1 text-xs text-slate-500">Member payment acknowledgement</p></div>
         <div className="mt-6 flex justify-between gap-4 text-sm"><span className="text-slate-500">Receipt number</span><strong>{payment.receipt_number}</strong></div>
