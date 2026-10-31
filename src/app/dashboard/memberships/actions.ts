@@ -27,6 +27,12 @@ function value(formData: FormData, key: string, max = 100) {
   return typeof raw === "string" ? raw.trim().slice(0, max) : "";
 }
 
+function isValidDate(date: string) {
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) return false;
+  const parsed = new Date(`${date}T00:00:00.000Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date;
+}
+
 function addDays(date: string, days: number) {
   const [year, month, day] = date.split("-").map(Number);
   const result = new Date(Date.UTC(year, month - 1, day + days));
@@ -56,13 +62,14 @@ export async function assignMembership(formData: FormData) {
     redirect("/dashboard/memberships?error=Choose%20an%20active%20membership%20plan");
   }
 
+  const endDate = addDays(startDate, plan.duration_days - 1);
   const { data: overlap, error: overlapError } = await supabase
     .from("memberships")
     .select("id")
     .eq("gym_id", gymId)
     .eq("member_id", memberId)
     .eq("status", "active")
-    .lte("start_date", startDate)
+    .lte("start_date", endDate)
     .gte("end_date", startDate)
     .limit(1)
     .maybeSingle();
@@ -70,7 +77,6 @@ export async function assignMembership(formData: FormData) {
   if (overlapError) redirect(`/dashboard/memberships?error=${encodeURIComponent(overlapError.message)}`);
   if (overlap) redirect("/dashboard/memberships?error=This%20member%20already%20has%20an%20active%20membership%20on%20that%20date");
 
-  const endDate = addDays(startDate, plan.duration_days - 1);
   const { error } = await supabase.from("memberships").insert({
     gym_id: gymId,
     member_id: memberId,
