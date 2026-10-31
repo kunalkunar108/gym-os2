@@ -39,3 +39,20 @@ Gym approval and GymOS subscription status are separate. Approved gym users can 
 ## 5. Current status
 
 The migration and typed Supabase client helpers are a foundation, not a complete authentication experience. The next implementation step is sign-in/sign-up, session refresh, protected routes, gym registration UI and trusted super-admin workflows.
+
+
+## 6. Bootstrap the first platform super-admin
+
+The first signed-up account is intentionally created as a normal user. After you have registered your own account and confirmed its profile exists, use the Supabase SQL Editor as the project owner to promote exactly that account once:
+
+```sql
+update public.profiles
+set platform_role = 'super_admin'
+where id = 'YOUR_AUTH_USER_UUID';
+```
+
+Find the UUID in Authentication → Users. Replace the placeholder with that exact UUID. Never expose a service-role key or allow a browser request to set this role. Keep super-admin provisioning restricted to the trusted Supabase project owner.
+
+## 7. Database permissions
+
+The migration grants authenticated users only the table operations required by the current policies and explicitly revokes anonymous access to these tables. RLS remains the tenant-level access boundary.
