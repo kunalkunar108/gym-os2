@@ -21,7 +21,11 @@ export default function LoginPage() {
       const supabase = createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (signInError) throw signInError;
-      router.replace("/dashboard");
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: profile } = user
+        ? await supabase.from("profiles").select("platform_role").eq("id", user.id).maybeSingle()
+        : { data: null };
+      router.replace(profile?.platform_role === "super_admin" ? "/admin" : "/dashboard");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to sign in. Please try again.");
