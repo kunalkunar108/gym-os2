@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Dumbbell, LogOut, ShieldCheck, Users, Layers3, CalendarDays } from "lucide-react";
+import { Dumbbell, LogOut, ShieldCheck, Users, Layers3, CalendarDays, Wallet } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -47,6 +47,11 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-3"><CalendarDays className="text-[var(--accent)]"/><h2 className="font-semibold">Member memberships</h2></div>
             <p className="mt-3 text-sm text-[var(--muted)]">Assign plans to members, calculate expiry dates and view membership history.</p>
             <p className="mt-5 text-sm font-semibold text-[var(--accent)]">Manage memberships →</p>
+          </Link>
+          <Link href="/dashboard/payments" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">
+            <div className="flex items-center gap-3"><Wallet className="text-[var(--accent)]"/><h2 className="font-semibold">Payments & receipts</h2></div>
+            <p className="mt-3 text-sm text-[var(--muted)]">Record member payments, track outstanding balances and print receipts.</p>
+            <p className="mt-5 text-sm font-semibold text-[var(--accent)]">Manage payments →</p>
           </Link>
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6">
             <div className="flex items-center gap-3"><ShieldCheck className="text-[var(--accent)]"/><h2 className="font-semibold">Workspace access verified</h2></div>
