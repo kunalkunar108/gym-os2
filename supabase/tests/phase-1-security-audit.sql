@@ -60,7 +60,7 @@ where contype = 'f'
     'public.attendance'::regclass,
     'public.subscription_payments'::regclass
   )
-order by table_name::text, conname;
+order by conrelid::regclass::text, conname;
 
 -- Interpretation:
 -- * Result 1: all listed tables should show rls_enabled = true.
