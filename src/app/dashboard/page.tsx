@@ -11,6 +11,9 @@ export default async function DashboardPage() {
     .from("gyms")
     .select("id,name,approval_status,rejection_reason")
     .eq("owner_user_id", user.id)
+    .eq("approval_status", "approved")
+    .order("created_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error) {
