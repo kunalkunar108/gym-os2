@@ -1,0 +1,9 @@
+{
+  "name": "GymOS",
+  "short_name": "GymOS",
+  "description": "Gym management for independent gyms.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090b10",
+  "theme_color": "#090b10"
+}
