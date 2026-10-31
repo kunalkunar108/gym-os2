@@ -438,3 +438,29 @@ using (gym_id is not null and private.can_access_gym(gym_id) or private.is_platf
 -- Intentionally no authenticated write policies for profiles, gym_users, platform_plans,
 -- gym approval fields, audit_logs, or subscription creation. Trusted server-side code
 -- using a server-only service role must perform those privileged operations.
+
+-- Explicit API grants: RLS policies are the row-level boundary; SQL grants
+-- determine which operations authenticated clients may attempt at all.
+grant select on public.profiles, public.gyms, public.gym_users,
+  public.platform_plans, public.gym_subscriptions, public.subscription_payments,
+  public.gym_settings, public.members, public.membership_plans,
+  public.memberships, public.payments, public.attendance, public.audit_logs
+to authenticated;
+
+grant insert on public.gyms, public.subscription_payments, public.members,
+  public.membership_plans, public.memberships, public.payments, public.attendance
+to authenticated;
+
+grant update on public.subscription_payments, public.gym_settings, public.members,
+  public.membership_plans, public.memberships, public.attendance
+to authenticated;
+
+revoke all on public.profiles, public.gyms, public.gym_users,
+  public.platform_plans, public.gym_subscriptions, public.subscription_payments,
+  public.gym_settings, public.members, public.membership_plans,
+  public.memberships, public.payments, public.attendance, public.audit_logs
+from anon;
+
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+revoke all on function public.handle_new_gym() from public, anon, authenticated;
+revoke all on function public.set_updated_at() from public, anon, authenticated;
