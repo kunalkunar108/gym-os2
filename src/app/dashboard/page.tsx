@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Dumbbell, LogOut, ShieldCheck, Users, Layers3, CalendarDays, Wallet } from "lucide-react";
+import { Dumbbell, LogOut, ShieldCheck, Users, Layers3, CalendarDays, Wallet, UserCheck } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -53,9 +53,14 @@ export default async function DashboardPage() {
             <p className="mt-3 text-sm text-[var(--muted)]">Record member payments, track outstanding balances and print receipts.</p>
             <p className="mt-5 text-sm font-semibold text-[var(--accent)]">Manage payments →</p>
           </Link>
+          <Link href="/dashboard/attendance" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">
+            <div className="flex items-center gap-3"><UserCheck className="text-[var(--accent)]"/><h2 className="font-semibold">Attendance management</h2></div>
+            <p className="mt-3 text-sm text-[var(--muted)]">Check members in and out, see who is currently inside and review attendance history.</p>
+            <p className="mt-5 text-sm font-semibold text-[var(--accent)]">Manage attendance →</p>
+          </Link>
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6">
             <div className="flex items-center gap-3"><ShieldCheck className="text-[var(--accent)]"/><h2 className="font-semibold">Workspace access verified</h2></div>
-            <p className="mt-3 text-sm text-[var(--muted)]">Member data is protected by gym-level row-level security. Membership, payment and attendance modules will follow.</p>
+            <p className="mt-3 text-sm text-[var(--muted)]">Gym data is protected by gym-level row-level security and server-side permission checks.</p>
           </section>
         </section>
       </div>
