@@ -13,7 +13,7 @@ Only the public/publishable key belongs in `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Neve
 
 Open the Supabase SQL Editor and run the complete file:
 
-`supabase/migrations/0001_initial_schema.sql`
+`supabase/migrations/0001_initial_schema.sql` followed by `supabase/migrations/0002_secure_gym_creation_trigger.sql`
 
 Alternatively, install the Supabase CLI and use its linked migration workflow. Do not run the migration twice manually.
 
@@ -38,7 +38,7 @@ Gym approval and GymOS subscription status are separate. Approved gym users can 
 
 ## 5. Current status
 
-The migration and typed Supabase client helpers are a foundation, not a complete authentication experience. The next implementation step is sign-in/sign-up, session refresh, protected routes, gym registration UI and trusted super-admin workflows.
+The schema and authentication/onboarding UI are now committed. Apply both migrations in order. Configure the Supabase URL and publishable/anon key locally in `.env.local`, then test signup, email confirmation, login and gym registration. The privileged super-admin approval workflow and cross-tenant integration tests are still pending.
 
 
 ## 6. Bootstrap the first platform super-admin
