@@ -9,16 +9,15 @@ async function getGymContext() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: gym, error } = await supabase
-    .from("gyms")
-    .select("id")
-    .eq("owner_user_id", user.id)
-    .eq("approval_status", "approved")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error || !gym) redirect("/onboarding");
+  const { data: memberships, error } = await supabase.from("gym_users")
+    .select("gym_id").eq("user_id", user.id).eq("status", "active")
+    .in("role", ["owner", "staff"]).limit(10);
+  if (error || !memberships?.length) redirect("/onboarding");
+  const { data: gyms } = await supabase.from("gyms").select("id")
+    .in("id", memberships.map((item) => item.gym_id)).eq("approval_status", "approved")
+    .order("created_at", { ascending: false }).limit(1);
+  const gym = gyms?.[0];
+  if (!gym) redirect("/onboarding");
   return { supabase, gymId: gym.id };
 }
 
