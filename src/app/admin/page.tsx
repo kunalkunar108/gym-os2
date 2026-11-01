@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { reviewGym } from "./actions";
 import Link from "next/link";
-import { CreditCard, Layers3 } from "lucide-react";
+import { CreditCard, Layers3, Activity } from "lucide-react";
 import { Dumbbell, ShieldCheck, Clock3, CheckCircle2, XCircle, LogOut } from "lucide-react";
 
 type SearchParams = Promise<{ updated?: string; error?: string }>;
@@ -72,7 +72,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Search
         {params.updated && <p className="mt-6 rounded-xl border border-emerald-900 bg-emerald-950/30 p-3 text-sm text-emerald-300">Registration review saved.</p>}
         {params.error && <p role="alert" className="mt-6 rounded-xl border border-red-900 bg-red-950/30 p-3 text-sm text-red-300">{errorMessages[params.error] || "Something went wrong."}</p>}
 
-        <div className="mt-6 flex flex-wrap gap-2"><Link href="/admin/plans" className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3 text-sm hover:border-[var(--accent)]"><Layers3 size={16}/> Manage subscription plans</Link><Link href="/admin/billing" className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3 text-sm hover:border-[var(--accent)]"><CreditCard size={16}/> Review subscription payments</Link></div>
+        <div className="mt-6 flex flex-wrap gap-2"><Link href="/admin/plans" className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3 text-sm hover:border-[var(--accent)]"><Layers3 size={16}/> Manage subscription plans</Link><Link href="/admin/billing" className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3 text-sm hover:border-[var(--accent)]"><CreditCard size={16}/> Review subscription payments</Link><Link href="/admin/activity" className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3 text-sm hover:border-[var(--accent)]"><Activity size={16}/> Platform activity</Link></div>
         <section className="mt-8 grid gap-4 sm:grid-cols-3">
           <Stat label="Pending review" value={pending.length} icon={<Clock3 size={18}/>} />
           <Stat label="Approved gyms" value={approved.length} icon={<CheckCircle2 size={18}/>} />
