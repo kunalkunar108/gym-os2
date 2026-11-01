@@ -40,11 +40,13 @@ export default async function DashboardPage() {
             <p className="mt-3 text-sm text-[var(--muted)]">Add members, search the directory and update member details or status.</p>
             <p className="mt-5 text-sm font-semibold text-[var(--accent)]">Open members →</p>
           </Link>
+          {isOwner && (
           <Link href="/dashboard/plans" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">
             <div className="flex items-center gap-3"><Layers3 className="text-[var(--accent)]"/><h2 className="font-semibold">Membership plans</h2></div>
             <p className="mt-3 text-sm text-[var(--muted)]">Create and manage monthly, quarterly, half-yearly and annual plans.</p>
             <p className="mt-5 text-sm font-semibold text-[var(--accent)]">Manage plans →</p>
           </Link>
+          )}
           <Link href="/dashboard/memberships" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">
             <div className="flex items-center gap-3"><CalendarDays className="text-[var(--accent)]"/><h2 className="font-semibold">Member memberships</h2></div>
             <p className="mt-3 text-sm text-[var(--muted)]">Assign plans to members, calculate expiry dates and view membership history.</p>
@@ -65,16 +67,20 @@ export default async function DashboardPage() {
             <p className="mt-3 text-sm text-[var(--muted)]">Invite staff, review access and disable or reactivate staff accounts.</p>
             <p className="mt-5 text-sm font-semibold text-[var(--accent)]">Manage staff →</p>
           </Link>}
+          {isOwner && (
           <Link href="/dashboard/billing" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">
             <div className="flex items-center gap-3"><CreditCard className="text-[var(--accent)]"/><h2 className="font-semibold">GymOS subscription</h2></div>
             <p className="mt-3 text-sm text-[var(--muted)]">View platform plans, submit subscription payments and track verification.</p>
             <p className="mt-5 text-sm font-semibold text-[var(--accent)]">View billing →</p>
           </Link>
+          )}
+          {isOwner && (
           <Link href="/dashboard/settings" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">
             <div className="flex items-center gap-3"><Settings2 className="text-[var(--accent)]"/><h2 className="font-semibold">Gym settings</h2></div>
             <p className="mt-3 text-sm text-[var(--muted)]">Configure currency, time zone and membership expiry warning defaults.</p>
             <p className="mt-5 text-sm font-semibold text-[var(--accent)]">Manage settings →</p>
           </Link>
+          )}
           <Link href="/dashboard/activity" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">\n            <div className="flex items-center gap-3"><Activity className="text-[var(--accent)]"/><h2 className="font-semibold">Activity log</h2></div>\n            <p className="mt-3 text-sm text-[var(--muted)]">Review recent recorded actions in this gym workspace.</p>\n            <p className="mt-5 text-sm font-semibold text-[var(--accent)]">View activity →</p>\n          </Link>\n          <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6">
             <div className="flex items-center gap-3"><ShieldCheck className="text-[var(--accent)]"/><h2 className="font-semibold">Workspace access verified</h2></div>
             <p className="mt-3 text-sm text-[var(--muted)]">Gym data is protected by gym-level row-level security and server-side permission checks.</p>
