@@ -19,7 +19,13 @@ export default async function MembershipsPage({ searchParams }: { searchParams: 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: gym } = await supabase.from("gyms").select("id,name").eq("owner_user_id", user.id).eq("approval_status", "approved").order("created_at", { ascending: false }).limit(1).maybeSingle();
+  const { data: access } = await supabase.from("gym_users").select("gym_id")
+    .eq("user_id", user.id).eq("status", "active").in("role", ["owner", "staff"]).limit(10);
+  if (!access?.length) redirect("/onboarding");
+  const { data: gyms } = await supabase.from("gyms").select("id,name")
+    .in("id", access.map((item) => item.gym_id)).eq("approval_status", "approved")
+    .order("created_at", { ascending: false }).limit(1);
+  const gym = gyms?.[0];
   if (!gym) redirect("/onboarding");
 
   const [{ data: members, error: membersError }, { data: plans, error: plansError }, { data: memberships, error: historyError }] = await Promise.all([
