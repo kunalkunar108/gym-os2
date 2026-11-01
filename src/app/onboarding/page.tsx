@@ -25,11 +25,28 @@ export default function OnboardingPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.replace("/login"); return; }
-      const { data, error: queryError } = await supabase.from("gyms").select("name,approval_status,rejection_reason").eq("owner_user_id", user.id).maybeSingle();
+      const { data: gyms, error: queryError } = await supabase
+        .from("gyms")
+        .select("name,approval_status,rejection_reason,created_at")
+        .eq("owner_user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
       if (!active) return;
       setUserId(user.id);
-      if (queryError) setError(queryError.message);
-      if (data) setExisting(data);
+      if (queryError) {
+        setError("We could not check your registration status. Please refresh the page.");
+      } else {
+        const records = gyms ?? [];
+        const approvedGym = records.find((gym) => gym.approval_status === "approved");
+        const pendingGym = records.find((gym) => gym.approval_status === "pending");
+        const latestGym = approvedGym ?? pendingGym ?? records[0] ?? null;
+        if (approvedGym) {
+          router.replace("/dashboard");
+          router.refresh();
+          return;
+        }
+        if (latestGym) setExisting(latestGym);
+      }
       setChecking(false);
     }
     load();
