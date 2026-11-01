@@ -2,24 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function JoinGymPage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const token = params.get("token") ?? "";
+  const [token, setToken] = useState("");
   const [message, setMessage] = useState("Checking your invitation...");
   const [error, setError] = useState("");
 
   useEffect(() => {
     let active = true;
+    const currentToken = new URLSearchParams(window.location.search).get("token") ?? "";
+    setToken(currentToken);
     async function claim() {
-      if (!token) { setError("This invitation link is missing its token."); return; }
+      if (!currentToken) { setError("This invitation link is missing its token."); return; }
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setMessage("Sign in or create an account using the email address this invitation was sent to."); return; }
-      const { error: claimError } = await supabase.rpc("claim_gym_staff_invitation", { invitation_token: token });
+      const { error: claimError } = await supabase.rpc("claim_gym_staff_invitation", { invitation_token: currentToken });
       if (!active) return;
       if (claimError) { setError(claimError.message); return; }
       setMessage("Invitation accepted. Opening your gym workspace...");
@@ -28,7 +29,7 @@ export default function JoinGymPage() {
     }
     claim();
     return () => { active = false; };
-  }, [router, token]);
+  }, [router]);
 
   const next = `/join-gym?token=${encodeURIComponent(token)}`;
   return <main className="grid min-h-screen place-items-center px-5 py-10"><section className="w-full max-w-lg rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-8">
