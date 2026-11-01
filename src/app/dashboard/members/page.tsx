@@ -12,16 +12,14 @@ export default async function MembersPage({ searchParams }: { searchParams: Sear
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: gym, error: gymError } = await supabase
-    .from("gyms")
-    .select("id,name")
-    .eq("owner_user_id", user.id)
-    .eq("approval_status", "approved")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (gymError || !gym) redirect("/onboarding");
+  const { data: access } = await supabase.from("gym_users").select("gym_id")
+    .eq("user_id", user.id).eq("status", "active").in("role", ["owner", "staff"]).limit(10);
+  if (!access?.length) redirect("/onboarding");
+  const { data: gyms } = await supabase.from("gyms").select("id,name")
+    .in("id", access.map((item) => item.gym_id)).eq("approval_status", "approved")
+    .order("created_at", { ascending: false }).limit(1);
+  const gym = gyms?.[0];
+  if (!gym) redirect("/onboarding");
 
   let membersQuery = supabase
     .from("members")
