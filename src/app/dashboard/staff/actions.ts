@@ -33,8 +33,21 @@ async function requireOwner() {
 
 export async function inviteStaff(formData: FormData) {
   const emailRaw = formData.get("email");
-  const email = typeof emailRaw === "string" ? emailRaw.trim().toLowerCase() : "";
-  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  // Normalize pasted addresses and remove invisible characters sometimes added by mobile keyboards.
+  const email = typeof emailRaw === "string"
+    ? emailRaw.normalize("NFKC").replace(/[\u200B-\u200D\uFEFF]/g, "").trim().toLowerCase()
+    : "";
+  const [localPart, domain, ...extra] = email.split("@");
+  const validEmail = extra.length === 0
+    && !!localPart
+    && localPart.length <= 64
+    && !!domain
+    && domain.includes(".")
+    && !email.includes("..")
+    && /^[^\s@]+$/.test(localPart)
+    && /^[a-z0-9.-]+$/i.test(domain)
+    && domain.split(".").every((label) => !!label && !label.startsWith("-") && !label.endsWith("-"));
+  if (email.length > 254 || !validEmail) {
     redirect("/dashboard/staff?error=Enter%20a%20valid%20email%20address");
   }
 
