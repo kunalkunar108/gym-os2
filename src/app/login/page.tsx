@@ -19,13 +19,15 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const supabase = createClient();
+      const requestedNext = new URLSearchParams(window.location.search).get("next");
+      const safeNext = requestedNext && requestedNext.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : null;
       const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (signInError) throw signInError;
       const { data: { user } } = await supabase.auth.getUser();
       const { data: profile } = user
         ? await supabase.from("profiles").select("platform_role").eq("id", user.id).maybeSingle()
         : { data: null };
-      router.replace(profile?.platform_role === "super_admin" ? "/admin" : "/dashboard");
+      router.replace(profile?.platform_role === "super_admin" ? "/admin" : safeNext ?? "/dashboard");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to sign in. Please try again.");
