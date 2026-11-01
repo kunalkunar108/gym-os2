@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Dumbbell, LogOut, ShieldCheck, Users, Layers3, CalendarDays, Wallet, UserCheck, Settings2 } from "lucide-react";
+import { Dumbbell, LogOut, ShieldCheck, Users, Layers3, CalendarDays, Wallet, UserCheck, Settings2, CreditCard } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -57,6 +57,11 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-3"><UserCheck className="text-[var(--accent)]"/><h2 className="font-semibold">Attendance management</h2></div>
             <p className="mt-3 text-sm text-[var(--muted)]">Check members in and out, see who is currently inside and review attendance history.</p>
             <p className="mt-5 text-sm font-semibold text-[var(--accent)]">Manage attendance →</p>
+          </Link>
+          <Link href="/dashboard/billing" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">
+            <div className="flex items-center gap-3"><CreditCard className="text-[var(--accent)]"/><h2 className="font-semibold">GymOS subscription</h2></div>
+            <p className="mt-3 text-sm text-[var(--muted)]">View platform plans, submit subscription payments and track verification.</p>
+            <p className="mt-5 text-sm font-semibold text-[var(--accent)]">View billing →</p>
           </Link>
           <Link href="/dashboard/settings" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">
             <div className="flex items-center gap-3"><Settings2 className="text-[var(--accent)]"/><h2 className="font-semibold">Gym settings</h2></div>
