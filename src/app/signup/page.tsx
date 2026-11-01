@@ -22,17 +22,19 @@ export default function SignupPage() {
     setLoading(true);
     try {
       const supabase = createClient();
+      const requestedNext = new URLSearchParams(window.location.search).get("next") ?? "/onboarding";
+      const next = requestedNext.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "/onboarding";
       const { data, error: signupError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: { data: { full_name: name.trim() }, emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding` },
+        options: { data: { full_name: name.trim() }, emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
       });
       if (signupError) throw signupError;
       if (data.session) {
-        router.replace("/onboarding");
+        router.replace(next);
         router.refresh();
       } else {
-        setMessage("Account created. Check your email to confirm your address, then sign in to register your gym.");
+        setMessage("Account created. Check your email to confirm your address. You will return to the invitation after confirmation.");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to create your account. Please try again.");
