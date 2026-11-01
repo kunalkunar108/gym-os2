@@ -13,7 +13,7 @@ set search_path = ''
 as $$
 declare
   clean_email text := lower(trim(invite_email));
-  raw_token text := encode(public.gen_random_bytes(24), 'hex');
+  raw_token text := encode(extensions.gen_random_bytes(24), 'hex');
 begin
   if auth.uid() is null
      or not private.has_gym_role(target_gym_id, array['owner'])
@@ -48,7 +48,7 @@ begin
   insert into public.gym_staff_invitations (
     gym_id, email, token_hash, invited_by, expires_at
   ) values (
-    target_gym_id, clean_email, encode(public.digest(raw_token, 'sha256'), 'hex'),
+    target_gym_id, clean_email, encode(extensions.digest(raw_token, 'sha256'), 'hex'),
     auth.uid(), now() + interval '7 days'
   );
 
@@ -81,7 +81,7 @@ begin
 
   select * into invitation
   from public.gym_staff_invitations i
-  where i.token_hash = encode(public.digest(invitation_token, 'sha256'), 'hex')
+  where i.token_hash = encode(extensions.digest(invitation_token, 'sha256'), 'hex')
     and i.email = current_email
     and i.accepted_at is null
     and i.revoked_at is null
