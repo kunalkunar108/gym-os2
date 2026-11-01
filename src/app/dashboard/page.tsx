@@ -8,19 +8,21 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: gym, error } = await supabase
-    .from("gyms")
-    .select("id,name,approval_status,rejection_reason")
-    .eq("owner_user_id", user.id)
-    .eq("approval_status", "approved")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
+  const { data: memberships, error } = await supabase.from("gym_users")
+    .select("gym_id,role").eq("user_id", user.id).eq("status", "active")
+    .in("role", ["owner", "staff"]).limit(10);
   if (error) {
     return <main className="mx-auto max-w-xl p-8"><h1 className="text-xl font-semibold">We could not load your gym</h1><p className="mt-3 text-sm text-red-300">{error.message}</p></main>;
   }
+  if (!memberships?.length) redirect("/onboarding");
+  const gymIds = memberships.map((item) => item.gym_id);
+  const { data: gyms, error: gymError } = await supabase.from("gyms")
+    .select("id,name,approval_status,rejection_reason").in("id", gymIds)
+    .eq("approval_status", "approved").order("created_at", { ascending: false }).limit(1);
+  if (gymError) return <main className="mx-auto max-w-xl p-8"><h1 className="text-xl font-semibold">We could not load your gym</h1><p className="mt-3 text-sm text-red-300">{gymError.message}</p></main>;
+  const gym = gyms?.[0];
   if (!gym) redirect("/onboarding");
+  const isOwner = memberships.some((item) => item.gym_id === gym.id && item.role === "owner");
 
   return (
     <main className="min-h-screen">
@@ -31,7 +33,7 @@ export default async function DashboardPage() {
       <div className="mx-auto max-w-6xl p-6 md:p-10">
         <p className="text-xs font-semibold uppercase tracking-[.18em] text-[var(--accent)]">Approved workspace</p>
         <h1 className="mt-2 text-3xl font-semibold">{gym.name}</h1>
-        <p className="mt-2 text-sm text-[var(--muted)]">Your gym workspace is approved. Manage your members from one place.</p>
+        <p className="mt-2 text-sm text-[var(--muted)]">{isOwner ? "Owner workspace. Manage your gym operations from one place." : "Staff workspace. Your access is limited to the permissions assigned by the gym owner."}</p>
         <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link href="/dashboard/members" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">
             <div className="flex items-center gap-3"><Users className="text-[var(--accent)]"/><h2 className="font-semibold">Member management</h2></div>
@@ -58,6 +60,11 @@ export default async function DashboardPage() {
             <p className="mt-3 text-sm text-[var(--muted)]">Check members in and out, see who is currently inside and review attendance history.</p>
             <p className="mt-5 text-sm font-semibold text-[var(--accent)]">Manage attendance →</p>
           </Link>
+          {isOwner && <Link href="/dashboard/staff" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">
+            <div className="flex items-center gap-3"><Users className="text-[var(--accent)]"/><h2 className="font-semibold">Staff management</h2></div>
+            <p className="mt-3 text-sm text-[var(--muted)]">Invite staff, review access and disable or reactivate staff accounts.</p>
+            <p className="mt-5 text-sm font-semibold text-[var(--accent)]">Manage staff →</p>
+          </Link>}
           <Link href="/dashboard/billing" className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 transition hover:border-[var(--accent)]">
             <div className="flex items-center gap-3"><CreditCard className="text-[var(--accent)]"/><h2 className="font-semibold">GymOS subscription</h2></div>
             <p className="mt-3 text-sm text-[var(--muted)]">View platform plans, submit subscription payments and track verification.</p>
