@@ -25,6 +25,26 @@ export default function OnboardingPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.replace("/login"); return; }
+      // Staff users do not own a gym. Resolve their active workspace membership first
+      // so they can never be mistaken for a new gym owner during onboarding.
+      const { data: workspaceMemberships, error: membershipError } = await supabase
+        .from("gym_users")
+        .select("gym_id,status")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .limit(1);
+      if (!active) return;
+      if (membershipError) {
+        setError("We could not check your workspace access. Please refresh the page.");
+        setChecking(false);
+        return;
+      }
+      if (workspaceMemberships?.length) {
+        router.replace("/dashboard");
+        router.refresh();
+        return;
+      }
+
       const { data: gyms, error: queryError } = await supabase
         .from("gyms")
         .select("name,approval_status,rejection_reason,created_at")
