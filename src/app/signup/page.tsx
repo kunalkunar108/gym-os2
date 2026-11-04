@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dumbbell, LoaderCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -14,6 +14,12 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hasInvitation, setHasInvitation] = useState(false);
+
+  useEffect(() => {
+    const next = new URLSearchParams(window.location.search).get("next") ?? "";
+    setHasInvitation(next.startsWith("/join-gym?"));
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,7 +58,7 @@ export default function SignupPage() {
         </div>
         <p className="text-xs font-semibold uppercase tracking-[.18em] text-[var(--accent)]">Get started</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Create your account</h1>
-        <p className="mt-2 text-sm text-[var(--muted)]">First create your login. You can submit your gym for approval next.</p>
+        <p className="mt-2 text-sm text-[var(--muted)]">{hasInvitation ? "Create your staff login to join the gym workspace. You will not need to register another gym." : "Create your login, then submit your gym for approval."}</p>
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
           <label className="block text-sm font-medium">Your full name
             <input required minLength={2} maxLength={100} value={name} onChange={e=>setName(e.target.value)} autoComplete="name" className="mt-2 w-full rounded-xl border border-[var(--border)] bg-[#0d1017] px-4 py-3 outline-none focus:border-[var(--accent)]" placeholder="Full name"/>
