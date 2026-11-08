@@ -2,21 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Activity } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 
 export default async function ActivityPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: membership } = await supabase.from("gym_users")
-    .select("gym_id,role").eq("user_id", user.id).eq("status", "active").limit(1).maybeSingle();
-  if (!membership) redirect("/onboarding");
-
-  const { data: gym } = await supabase.from("gyms").select("name")
-    .eq("id", membership.gym_id).maybeSingle();
+  const { supabase, gym, gymId } = await getActiveGymContext();
   const { data: logs, error } = await supabase.from("audit_logs")
     .select("id,actor_id,action,entity_type,entity_id,metadata,created_at")
-    .eq("gym_id", membership.gym_id).order("created_at", { ascending: false }).limit(100);
+    .eq("gym_id", gymId).order("created_at", { ascending: false }).limit(100);
 
   const actorIds = [...new Set((logs ?? []).map(log => log.actor_id).filter(Boolean))] as string[];
   const { data: actors } = actorIds.length

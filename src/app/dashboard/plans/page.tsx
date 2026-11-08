@@ -2,26 +2,15 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, BadgeIndianRupee, Clock3, Dumbbell, Layers3 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 import { createMembershipPlan, updateMembershipPlan } from "./actions";
 
 type SearchParams = Promise<{ error?: string; success?: string }>;
 
 export default async function PlansPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: gym, error: gymError } = await supabase
-    .from("gyms")
-    .select("id,name,owner_user_id")
-    .eq("owner_user_id", user.id)
-    .eq("approval_status", "approved")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (gymError || !gym) redirect("/onboarding");
+  const { supabase, gym, role } = await getActiveGymContext();
+  if (role !== "owner") redirect("/dashboard");
 
   const { data: plans, error } = await supabase
     .from("membership_plans")

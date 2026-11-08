@@ -2,24 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Search, UserPlus, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 import { addMember, updateMember } from "./actions";
 
 type SearchParams = Promise<{ q?: string; error?: string; success?: string }>;
 
 export default async function MembersPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: access } = await supabase.from("gym_users").select("gym_id")
-    .eq("user_id", user.id).eq("status", "active").in("role", ["owner", "staff"]).limit(10);
-  if (!access?.length) redirect("/onboarding");
-  const { data: gyms } = await supabase.from("gyms").select("id,name")
-    .in("id", access.map((item) => item.gym_id)).eq("approval_status", "approved")
-    .order("created_at", { ascending: false }).limit(1);
-  const gym = gyms?.[0];
-  if (!gym) redirect("/onboarding");
+  const { supabase, gym } = await getActiveGymContext();
 
   let membersQuery = supabase
     .from("members")

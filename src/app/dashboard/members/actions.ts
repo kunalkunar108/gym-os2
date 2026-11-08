@@ -3,22 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 
 async function getApprovedGymId() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: memberships, error } = await supabase
-    .from("gym_users").select("gym_id")
-    .eq("user_id", user.id).eq("status", "active").in("role", ["owner", "staff"]).limit(10);
-  if (error || !memberships?.length) redirect("/onboarding");
-  const { data: gyms } = await supabase.from("gyms").select("id")
-    .in("id", memberships.map((item) => item.gym_id)).eq("approval_status", "approved")
-    .order("created_at", { ascending: false }).limit(1);
-  const gym = gyms?.[0];
-  if (!gym) redirect("/onboarding");
-  return { supabase, user, gymId: gym.id };
+  const context = await getActiveGymContext();
+  return { ...context, gymId: context.gymId };
 }
 
 function requiredText(value: FormDataEntryValue | null, max: number) {

@@ -13,7 +13,7 @@ Only the public/publishable key belongs in `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Neve
 
 Open the Supabase SQL Editor and run the complete file:
 
-`supabase/migrations/0001_initial_schema.sql` followed by `supabase/migrations/0002_secure_gym_creation_trigger.sql`
+`supabase/migrations/0001_initial_schema.sql`, `supabase/migrations/0002_secure_gym_creation_trigger.sql`, then `supabase/migrations/0003_multi_gym_workspace_indexes.sql`
 
 Alternatively, install the Supabase CLI and use its linked migration workflow. Do not run the migration twice manually.
 
@@ -24,6 +24,8 @@ Alternatively, install the Supabase CLI and use its linked migration workflow. D
 - Owner membership and default gym settings created automatically on gym registration.
 - Platform plans and separate GymOS subscription/payment records.
 - Gym-scoped members, membership plans, memberships, member payments, attendance and audit logs.
+- Multi-gym accounts: one user can own or work in multiple approved gyms; each workspace is selected independently and remains isolated by `gym_id`.
+- Active workspace selection is stored in a secure, HTTP-only cookie and revalidated against the user's active `gym_users` membership on every server request.
 - RLS policies and security-definer helper functions for tenant membership checks.
 
 Gym approval and GymOS subscription status are separate. Approved gym users can access that gym's workspace regardless of billing status; subscription enforcement belongs in the application access workflow so an expired gym can still reach renewal/payment screens.
@@ -38,7 +40,7 @@ Gym approval and GymOS subscription status are separate. Approved gym users can 
 
 ## 5. Current status
 
-The schema and authentication/onboarding UI are now committed. Apply both migrations in order. Configure the Supabase URL and publishable/anon key locally in `.env.local`, then test signup, email confirmation, login and gym registration. The privileged super-admin approval workflow and cross-tenant integration tests are still pending.
+The schema and authentication/onboarding UI are committed. Apply all three migrations in order. Configure the Supabase URL and publishable/anon key locally in `.env.local`, then test signup, email confirmation, login and gym registration. The privileged super-admin approval workflow and cross-tenant integration tests are still pending.
 
 
 ## 6. Bootstrap the first platform super-admin

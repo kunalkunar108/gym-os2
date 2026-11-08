@@ -2,31 +2,18 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Settings2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 import { updateGymSettings } from "./actions";
 
 type SearchParams = Promise<{ error?: string; success?: string }>;
 
 export default async function GymSettingsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: ownerMembership } = await supabase
-    .from("gym_users")
-    .select("gym_id")
-    .eq("user_id", user.id)
-    .eq("role", "owner")
-    .eq("status", "active")
-    .limit(1)
-    .maybeSingle();
-  if (!ownerMembership) redirect("/dashboard");
-
-  const [{ data: gym }, { data: settings, error }] = await Promise.all([
-    supabase.from("gyms").select("id,name,approval_status").eq("id", ownerMembership.gym_id).maybeSingle(),
-    supabase.from("gym_settings").select("currency,time_zone,expiry_warning_days").eq("gym_id", ownerMembership.gym_id).maybeSingle(),
+  const { supabase, gym, gymId, role } = await getActiveGymContext();
+  if (role !== "owner") redirect("/dashboard");
+  const [{ data: settings, error }] = await Promise.all([
+    supabase.from("gym_settings").select("currency,time_zone,expiry_warning_days").eq("gym_id", gymId).maybeSingle(),
   ]);
-  if (!gym || gym.approval_status !== "approved") redirect("/onboarding");
 
   return (
     <main className="min-h-screen">

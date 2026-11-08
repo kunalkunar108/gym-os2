@@ -3,23 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 
 async function getGymContext() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: gym, error } = await supabase
-    .from("gyms")
-    .select("id")
-    .eq("owner_user_id", user.id)
-    .eq("approval_status", "approved")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error || !gym) redirect("/onboarding");
-  return { supabase, user, gymId: gym.id };
+  const context = await getActiveGymContext();
+  if (context.role !== "owner") redirect("/dashboard");
+  return { ...context, gymId: context.gymId };
 }
 
 function textValue(value: FormDataEntryValue | null, max: number) {

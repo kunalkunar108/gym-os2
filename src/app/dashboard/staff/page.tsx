@@ -1,25 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 import { inviteStaff, updateStaffStatus } from "./actions";
 
 type Search = Promise<{ error?: string; success?: string; inviteToken?: string }>;
 
 export default async function StaffPage({ searchParams }: { searchParams: Search }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: ownerRows } = await supabase.from("gym_users")
-    .select("gym_id").eq("user_id", user.id).eq("role", "owner").eq("status", "active").limit(10);
-  const ids = (ownerRows ?? []).map((row) => row.gym_id);
-  if (!ids.length) redirect("/dashboard");
-
-  const { data: gyms } = await supabase.from("gyms").select("id,name")
-    .in("id", ids).eq("approval_status", "approved").order("created_at", { ascending: false }).limit(1);
-  const gym = gyms?.[0];
-  if (!gym) redirect("/onboarding");
+  const { supabase, gym, role } = await getActiveGymContext();
+  if (role !== "owner") redirect("/dashboard");
 
   const { data: staff } = await supabase.from("gym_users")
     .select("user_id,role,status,created_at")
