@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, CalendarDays, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 import { assignMembership } from "./actions";
 
 type SearchParams = Promise<{ error?: string; success?: string }>;
@@ -15,18 +16,7 @@ function money(amount: number) {
 
 export default async function MembershipsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: access } = await supabase.from("gym_users").select("gym_id")
-    .eq("user_id", user.id).eq("status", "active").in("role", ["owner", "staff"]).limit(10);
-  if (!access?.length) redirect("/onboarding");
-  const { data: gyms } = await supabase.from("gyms").select("id,name")
-    .in("id", access.map((item) => item.gym_id)).eq("approval_status", "approved")
-    .order("created_at", { ascending: false }).limit(1);
-  const gym = gyms?.[0];
-  if (!gym) redirect("/onboarding");
+  const { supabase, gym } = await getActiveGymContext();
 
   const [{ data: members, error: membersError }, { data: plans, error: plansError }, { data: memberships, error: historyError }] = await Promise.all([
     supabase.from("members").select("id,member_code,full_name,status").eq("gym_id", gym.id).eq("status", "active").order("full_name").limit(500),
