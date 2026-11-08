@@ -2,28 +2,21 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, CreditCard, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 import { submitGymSubscription } from "./actions";
 
 type Params = Promise<{ error?: string; submitted?: string }>;
 
 export default async function BillingPage({ searchParams }: { searchParams: Params }) {
   const params = await searchParams;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const { supabase, gym, gymId, role } = await getActiveGymContext();
+  if (role !== "owner") redirect("/dashboard");
 
-  const { data: ownerRow } = await supabase.from("gym_users")
-    .select("gym_id").eq("user_id", user.id).eq("role", "owner").eq("status", "active").limit(1).maybeSingle();
-  if (!ownerRow) redirect("/dashboard");
-
-  const [{ data: gym }, { data: plans, error: plansError }, { data: subscriptions }, { data: payments }] = await Promise.all([
-    supabase.from("gyms").select("id,name,approval_status").eq("id", ownerRow.gym_id).maybeSingle(),
+  const [{ data: plans, error: plansError }, { data: subscriptions }, { data: payments }] = await Promise.all([
     supabase.from("platform_plans").select("id,code,name,setup_fee,monthly_fee,annual_fee,currency").eq("is_active", true).order("monthly_fee"),
-    supabase.from("gym_subscriptions").select("id,plan_id,billing_cycle,status,period_start,period_end,created_at").eq("gym_id", ownerRow.gym_id).order("created_at", { ascending: false }),
-    supabase.from("subscription_payments").select("id,subscription_id,amount,currency,method,reference,verification_status,admin_note,created_at").eq("gym_id", ownerRow.gym_id).order("created_at", { ascending: false }).limit(30),
+    supabase.from("gym_subscriptions").select("id,plan_id,billing_cycle,status,period_start,period_end,created_at").eq("gym_id", gymId).order("created_at", { ascending: false }),
+    supabase.from("subscription_payments").select("id,subscription_id,amount,currency,method,reference,verification_status,admin_note,created_at").eq("gym_id", gymId).order("created_at", { ascending: false }).limit(30),
   ]);
-
-  if (!gym) redirect("/dashboard");
   const planMap = new Map((plans ?? []).map(p => [p.id, p.name]));
   const activeSubscription = (subscriptions ?? []).find(s => s.status === "active");
   const pendingSubscription = (subscriptions ?? []).find(s => s.status === "pending");
