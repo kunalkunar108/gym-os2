@@ -2,14 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 
 export async function submitGymSubscription(formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
+  const { supabase, gymId: activeGymId, role } = await getActiveGymContext();
+  if (role !== "owner") redirect("/dashboard");
   const gymId = String(formData.get("gymId") ?? "");
+  if (gymId !== activeGymId) redirect("/dashboard/billing?error=workspace_changed");
   const planId = String(formData.get("planId") ?? "");
   const billingCycle = String(formData.get("billingCycle") ?? "");
   const method = String(formData.get("method") ?? "");
