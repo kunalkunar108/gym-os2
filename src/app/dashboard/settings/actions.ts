@@ -2,23 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 
 export async function updateGymSettings(formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: membership, error: membershipError } = await supabase
-    .from("gym_users")
-    .select("gym_id")
-    .eq("user_id", user.id)
-    .eq("role", "owner")
-    .eq("status", "active")
-    .limit(1)
-    .maybeSingle();
-
-  if (membershipError || !membership) redirect("/dashboard?error=owner_access_required");
+  const { supabase, gymId, role } = await getActiveGymContext();
+  if (role !== "owner") redirect("/dashboard?error=owner_access_required");
 
   const currency = String(formData.get("currency") ?? "").trim().toUpperCase();
   const timeZone = String(formData.get("time_zone") ?? "").trim();
@@ -38,7 +26,7 @@ export async function updateGymSettings(formData: FormData) {
       time_zone: timeZone,
       expiry_warning_days: expiryWarningDays,
     })
-    .eq("gym_id", membership.gym_id);
+    .eq("gym_id", gymId);
 
   if (error) redirect("/dashboard/settings?error=save_failed");
 
