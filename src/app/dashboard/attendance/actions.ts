@@ -3,34 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 
 async function getGymContext() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: memberships, error: accessError } = await supabase
-    .from("gym_users")
-    .select("gym_id,role")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .in("role", ["owner", "staff"])
-    .limit(10);
-
-  if (accessError || !memberships?.length) redirect("/onboarding");
-
-  const gymIds = memberships.map((item) => item.gym_id);
-  const { data: gyms, error: gymError } = await supabase
-    .from("gyms")
-    .select("id,name")
-    .in("id", gymIds)
-    .eq("approval_status", "approved")
-    .order("created_at", { ascending: false })
-    .limit(1);
-
-  const gym = gyms?.[0];
-  if (gymError || !gym) redirect("/onboarding");
-  return { supabase, user, gym };
+  const context = await getActiveGymContext();
+  return { ...context, gym: { id: context.gymId, name: context.gym.name } };
 }
 
 export async function checkInMember(formData: FormData) {
