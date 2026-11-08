@@ -3,32 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveGymContext } from "@/lib/gym-context";
 
 async function requireOwner() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: memberships, error } = await supabase
-    .from("gym_users")
-    .select("gym_id")
-    .eq("user_id", user.id)
-    .eq("role", "owner")
-    .eq("status", "active")
-    .limit(10);
-
-  if (error || !memberships?.length) redirect("/dashboard");
-  const gymIds = memberships.map((item) => item.gym_id);
-  const { data: gyms } = await supabase
-    .from("gyms")
-    .select("id")
-    .in("id", gymIds)
-    .eq("approval_status", "approved")
-    .order("created_at", { ascending: false })
-    .limit(1);
-  const gym = gyms?.[0];
-  if (!gym) redirect("/onboarding");
-  return { supabase, gymId: gym.id };
+  const context = await getActiveGymContext();
+  if (context.role !== "owner") redirect("/dashboard");
+  return { ...context, gymId: context.gymId };
 }
 
 export async function inviteStaff(formData: FormData) {
